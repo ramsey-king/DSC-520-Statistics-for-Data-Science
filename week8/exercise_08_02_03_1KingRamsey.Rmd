@@ -1,0 +1,141 @@
+---
+title: "EXERCISE 8.2.3"
+author: "Ramsey King"
+date: '2021-05-08'
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+# bibliography: bibliography.bib
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_knit$set(root.dir = 'C:/Users/Ramsey/Documents/GitHub/dsc520/')
+#knitr::opts_knit$set(root.dir = '/home/ramsey/GitHub/dsc520')
+```
+
+Housing Data - Complete the following:
+
+1. Explain any transformations or modifications you made to the dataset
+
+- Modifications made: added a variable called price_per_sqft and a row_id. 
+```{r echo=FALSE}
+## Read the Excel file into the variable housing data
+library(readxl)
+housing_data <- read_excel('assignments/assignment07/week-6-housing.xlsx')
+
+library(dplyr)
+## Add price_per_sqft as a new variable to the data frame.
+housing_data$price_per_sqft = housing_data$`Sale Price`/housing_data$square_feet_total_living
+
+## We are going to create an ID_num and then bind it to the housing_data data frame using cbind
+row_id <- c(1:12865)
+
+housing_data_row_id <- cbind(housing_data, row_id)
+# Here, we rename the column headers "Sale Price" and "Sale Date" to include an underscore
+housing_data_row_id <- housing_data_row_id %>% rename(Sale_Price = `Sale Price` , Sale_Date = `Sale Date`)
+```
+
+2.  Create two variables; one that will contain the variables Sale Price and Square Foot of Lot (same variables used from previous assignment on simple regression) and one that will contain Sale Price and several additional predictors of your choice. Explain the basis for your additional predictor selections.
+
+```{r echo=FALSE}
+sale_price_lm <-lm(Sale_Price ~ sq_ft_lot, data = housing_data_row_id)
+
+sale_price_lm_additional <- lm(Sale_Price ~ sq_ft_lot + square_feet_total_living + year_built, data = housing_data_row_id)
+```
+- My additional predictors chosen were the square_feet_total_living and the year built.  The reason I chose these additional predictors is because I believe the larger the square footage on the home, the more expensive it will be.  I also believe that newer homes will be more expensive than older homes.
+
+3.  Execute a summary() function on two variables defined in the previous step to compare the model results. What are the R2 and Adjusted R2 statistics? Explain what these results tell you about the overall model. Did the inclusion of the additional predictors help explain any large variations found in Sale Price?
+
+```{r echo=FALSE}
+summary(sale_price_lm)
+
+summary(sale_price_lm_additional)
+
+```
+- r squared and adjusted r squared for the first variable : 0.01435 and 0.01428.  r squared and adjusted r squared for the second variable: 0.22 and 0.2198.
+The overall model improved when adding the additional variables (square_feet_total_living and year_built).  
+
+4. Considering the parameters of the multiple regression model you have created, what are the standardized betas for each parameter and what do the values indicate?
+
+```{r echo=FALSE}
+library(QuantPsyc)
+lm.beta(sale_price_lm)
+
+lm.beta(sale_price_lm_additional)
+```
+
+Square_feet_total_living has the highest impact on the sale price.
+
+5. Calculate the confidence intervals for the parameters in your model and explain what the results indicate.
+```{r echo=FALSE}
+confint(sale_price_lm)
+
+confint(sale_price_lm_additional)
+```
+
+It seems that these confidence intervals are close to each other, which would suggest that the model is representative of the true population values.
+
+6. Assess the improvement of the new model compared to your original model (simple regression model) by testing whether this change is significant by performing an analysis of variance.
+
+```{r echo=FALSE}
+sale_price_anova <- anova(sale_price_lm, sale_price_lm_additional)
+sale_price_anova
+```
+
+7. Perform casewise diagnostics to identify outliers and/or influential cases, storing each function's output in a dataframe assigned to a unique variable name.
+
+```{r echo=FALSE}
+housing_data_row_id$residuals <- resid(sale_price_lm_additional)
+
+housing_data_row_id$cooks_distance <- cooks.distance(sale_price_lm_additional)
+```
+
+8. Calculate the standardized residuals using the appropriate command, specifying those that are +-2, storing the results of large residuals in a variable you create.
+
+```{r echo=FALSE}
+housing_data_row_id$standardized_residuals <- rstandard(sale_price_lm_additional)
+housing_data_row_id$large_residuals <- housing_data_row_id$standardized_residuals > 2 | housing_data_row_id$standardized_residuals < -2
+```
+
+9. Use the appropriate function to show the sum of large residuals.
+```{r echo=FALSE}
+sum(housing_data_row_id$large_residuals)
+```
+
+10. Which specific variables have large residuals (only cases that evaluate as TRUE)?
+```{r echo=FALSE}
+sale_price_list <- housing_data_row_id[housing_data_row_id$large_residuals, c("Sale_Price", "sq_ft_lot", "square_feet_total_living", "year_built", "standardized_residuals")]
+```
+
+11. Investigate further by calculating the leverage, cooks distance, and covariance rations. Comment on all cases that are problematics.
+```{r echo=FALSE}
+housing_data_row_id$leverage <- hatvalues(sale_price_lm_additional)
+housing_data_row_id$covariance_ratios <- covratio(sale_price_lm_additional)
+housing_data_row_id[housing_data_row_id$large_residuals, c("cooks_distance", "leverage", "covariance_ratios")]
+```
+
+All cooks distance are less than 1, so there seems to be no issues.
+
+12. Perform the necessary calculations to assess the assumption of independence and state if the condition is met or not.
+```{r echo=FALSE}
+library(car)
+dwt(sale_price_lm_additional)
+```
+dwt is less than 1, so everything looks ok here.
+
+13. Perform the necessary calculations to assess the assumption of no multicollinearity and state if the condition is met or not.
+```{r echo=FALSE}
+vif(sale_price_lm_additional)
+```
+vif is less than 10, so everything looks ok here.
+
+14. Visually check the assumptions related to the residuals using the plot() and hist() functions. Summarize what each graph is informing you of and if any anomalies are present.
+```{r echo=FALSE}
+plot(sale_price_lm_additional)
+hist(housing_data_row_id$standardized_residuals)
+```
+
+15. Overall, is this regression model unbiased? If an unbiased regression model, what does this tell us about the sample vs. the entire population model?
+
+I am not sure.  The model does not follow a normal distribution, so I am not sure if this suggests bias or not.  In saying that, most of the calculations and variables have not shown any metrics that have caused alarm.

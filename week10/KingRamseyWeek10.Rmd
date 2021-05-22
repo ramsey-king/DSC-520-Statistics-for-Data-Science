@@ -1,0 +1,93 @@
+---
+title: "EXERCISE 10.2"
+author: "Ramsey King"
+date: '2021-05-22'
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+# bibliography: bibliography.bib
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_knit$set(root.dir = 'C:/Users/Ramsey/Documents/GitHub/dsc520/')
+```
+
+## Fit a Logistic Regression Model to Thoracic Surgery Binary Dataset
+
+```{r read_surgery_data, echo=FALSE}
+library(foreign)
+surgery_data <- read.arff("assignments/Week 10/ThoraricSurgery.arff") 
+```
+
+**1. Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.**
+
+```{r create_logistic_regression_model, echo=FALSE}
+the_model <- glm(Risk1Yr ~ PRE11 + PRE30 + PRE9 + PRE14, data = surgery_data, family = binomial())
+summary(the_model)
+```
+
+**2. According to the summary, which variables had the greatest effect on the survival rate?**
+
+It appears that the variable PRE9T, which is Dyspnoea before surgery had the greatest impact.  The reason is that the b estimate is 1.102, and the Pr(>|z|) value is 0.01, which is less than 0.05.  Also, PRE14OC14, which is the largest original tumor size, had a b estimate of 1.84, and a Pr(>|z|) value of 0.00103, which is less than 0.05.  
+
+
+
+**3. To compute the accuracy of your model, use the dataset to predict the outcome variable. The percent of correct predictions is the accuracy of your model. What is the accuracy of your model?**
+
+```{r model_accuracy, echo=FALSE, warning=FALSE, message=FALSE}
+library(caret)
+library(magrittr)
+library(tidyverse)
+
+set.seed(470)
+
+trainIndex <- createDataPartition(surgery_data$Risk1Yr, p = .67,
+                                  list = F,
+                                  times = 1)
+
+train_dataset <- surgery_data[trainIndex,]
+test_dataset <- surgery_data[-trainIndex,]
+
+test_dataset$model_prob <- predict(the_model, test_dataset, type = "response")
+
+test_dataset <- test_dataset  %>% mutate(model_pred = 1*(model_prob > .50) + 0,
+                                 actual_results = 1*(Risk1Yr == "T") + 0)
+
+test_dataset <- test_dataset %>% mutate(accurate = 1*(model_pred == actual_results))
+sum(test_dataset$accurate)/nrow(test_dataset)
+
+```
+
+
+
+## Fit a Logistic Regression Model
+
+**1. Fit a logistic regression model to the binary-classifier-data.csv dataset**
+```{r echo=FALSE}
+binary_data <- read.csv("assignments/Week 10/binary-classifier-data.csv") 
+the_binary_model <- glm(label ~ x + y, data = binary_data, family = binomial())
+summary(the_binary_model)
+```
+
+
+**2. What is the accuracy of the logistic regression classifier?**
+```{r binary_model_accuracy, echo=FALSE, warning=FALSE, message=FALSE}
+set.seed(1498)
+
+train_binary_Index <- createDataPartition(binary_data$label, p = .67,
+                                  list = F,
+                                  times = 1)
+
+train_binary_dataset <- binary_data[train_binary_Index,]
+test_binary_dataset <- binary_data[-train_binary_Index,]
+
+test_binary_dataset$model_binary_prob <- predict(the_binary_model, test_binary_dataset, type = "response")
+
+test_binary_dataset <- test_binary_dataset  %>% mutate(model_binary_pred = 1*(model_binary_prob > .50) + 0,
+                                 actual_binary_results = 1*(label == 1) + 0)
+
+test_binary_dataset <- test_binary_dataset %>% mutate(accurate = 1*(model_binary_pred == actual_binary_results))
+sum(test_binary_dataset$accurate)/nrow(test_binary_dataset)
+
+```

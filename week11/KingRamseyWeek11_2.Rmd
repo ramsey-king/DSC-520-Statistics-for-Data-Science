@@ -49,14 +49,24 @@ ggplot(trinary_data, aes(x = x, y = y)) +
 ### 2. Fit a k nearest neighbors’ model for each dataset for k=3, k=5, k=10, k=15, k=20, and k=25. Compute the accuracy of the resulting models for each value of k. Plot the results in a graph where the x-axis is the different values of k and the y-axis is the accuracy of the model.
 
 ```{r k_means_binary, echo=FALSE}
-set.seed(36912)
-binaryk3 <- kmeans(x=binary_data, centers=3)
-binaryk5 <- kmeans(x=binary_data, centers=5)
-binaryk10 <- kmeans(x=binary_data, centers=10)
-binaryk15 <- kmeans(x=binary_data, centers=15)
-binaryk20 <- kmeans(x=binary_data, centers=20)
-binaryk25 <- kmeans(x=binary_data, centers=25)
+binary_train <- binary_data[, which(names(binary_data) != "label")]
 
-# NEED TO COMPUTE THE ACCUARCY
+set.seed(36912)
+binaryk3 <- kmeans(x=binary_train, centers=3)
+binaryk5 <- kmeans(x=binary_train, centers=5)
+binaryk10 <- kmeans(x=binary_train, centers=10)
+binaryk15 <- kmeans(x=binary_train, centers=15)
+binaryk20 <- kmeans(x=binary_train, centers=20)
+binaryk25 <- kmeans(x=binary_train, centers=25)
+
+binarytrainIndex <- createDataPartition(binary_data$label, p = 0.7,
+                                        list = F,
+                                        times =1)
+binary_train_dataset <- binary_data[binarytrainIndex,]
+binary_test_dataset <- binary_data[-binarytrainIndex,]
+
+
+
+
 
 ```

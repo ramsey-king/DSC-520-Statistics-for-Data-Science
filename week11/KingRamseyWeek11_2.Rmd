@@ -49,24 +49,50 @@ ggplot(trinary_data, aes(x = x, y = y)) +
 ### 2. Fit a k nearest neighbors’ model for each dataset for k=3, k=5, k=10, k=15, k=20, and k=25. Compute the accuracy of the resulting models for each value of k. Plot the results in a graph where the x-axis is the different values of k and the y-axis is the accuracy of the model.
 
 ```{r k_means_binary, echo=FALSE}
-binary_train <- binary_data[, which(names(binary_data) != "label")]
-
+library(caret)
 set.seed(36912)
-binaryk3 <- kmeans(x=binary_train, centers=3)
-binaryk5 <- kmeans(x=binary_train, centers=5)
-binaryk10 <- kmeans(x=binary_train, centers=10)
-binaryk15 <- kmeans(x=binary_train, centers=15)
-binaryk20 <- kmeans(x=binary_train, centers=20)
-binaryk25 <- kmeans(x=binary_train, centers=25)
-
 binarytrainIndex <- createDataPartition(binary_data$label, p = 0.7,
                                         list = F,
-                                        times =1)
+                                        times = 1)
 binary_train_dataset <- binary_data[binarytrainIndex,]
 binary_test_dataset <- binary_data[-binarytrainIndex,]
 
+#binary_target_category <- binary_train_dataset$label
+#binary_test_category <- binary_test_dataset$label
+
+binary_target_category <- binary_data[binarytrainIndex,1]
+binary_test_category <- binary_data[-binarytrainIndex,1]
 
 
+library(class)
 
+knn3 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=3)
+tableknn3 <- table(knn3, binary_test_category)
+tableknn3
+acc3 <- sum(diag(tableknn3)/(sum(rowSums(tableknn3))))*100
+acc3
+
+knn5 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=5)
+tableknn5 <- table(knn5, binary_test_category)
+tableknn5
+
+knn10 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=10)
+tableknn10 <- table(knn10, binary_test_category)
+tableknn10
+
+knn15 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=15)
+tableknn15 <- table(knn15, binary_test_category)
+tableknn15
+
+knn20 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=20)
+tableknn20 <- table(knn20, binary_test_category)
+tableknn20
+
+knn25 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=25)
+tableknn25 <- table(knn25, binary_test_category)
+tableknn25
+
+#NEED TO COMUTE ACCURACY OF EACH KNN AND CREATE TABLE SO IT CAN BE PLOTTED.  THIS SEEMS OFF BECAUSE OF THE HIGH ACCURACY OF EACH MODEL
+# BUT I NEED TO MOVE ON.
 
 ```

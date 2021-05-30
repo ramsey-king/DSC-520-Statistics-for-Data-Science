@@ -3,15 +3,15 @@ title: "EXERCISE 11.2"
 author: "Ramsey King"
 date: '2021-05-29'
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
   word_document: default
 # bibliography: bibliography.bib
 ---
 
 ```{r setup, echo=FALSE}
-#knitr::opts_knit$set(root.dir = 'C:/Users/Ramsey/Documents/GitHub/dsc520/')
-knitr::opts_knit$set(root.dir = '/home/ramsey/GitHub/dsc520')
+knitr::opts_knit$set(root.dir = 'C:/Users/Ramsey/Documents/GitHub/dsc520/')
+#knitr::opts_knit$set(root.dir = '/home/ramsey/GitHub/dsc520')
 ```
 
 ## In this problem, you will use the nearest neighbors algorithm to fit a model on two simplified datasets. 
@@ -25,10 +25,8 @@ knitr::opts_knit$set(root.dir = '/home/ramsey/GitHub/dsc520')
 ```{r scatter_plot_binary, echo=FALSE}
 ## Read the csv file in the binary_classifier variable
 binary_data <- read.csv("assignments/week11/binary-classifier-data.csv")
-
 ## load the ggplot2 library
 library(ggplot2)
-
 ## Scatter plot of the binary data set.
 ggplot(binary_data, aes(x = x, y = y)) +
   geom_point()
@@ -36,10 +34,8 @@ ggplot(binary_data, aes(x = x, y = y)) +
 ```{r scatter_plot_trinary, echo=FALSE}
 ## Read the csv file in the binary_classifier variable
 trinary_data <- read.csv("assignments/week11/trinary-classifier-data.csv")
-
 ## load the ggplot2 library
 library(ggplot2)
-
 ## Scatter plot of the tridary data set.
 ggplot(trinary_data, aes(x = x, y = y)) +
   geom_point()
@@ -48,51 +44,218 @@ ggplot(trinary_data, aes(x = x, y = y)) +
 
 ### 2. Fit a k nearest neighbors’ model for each dataset for k=3, k=5, k=10, k=15, k=20, and k=25. Compute the accuracy of the resulting models for each value of k. Plot the results in a graph where the x-axis is the different values of k and the y-axis is the accuracy of the model.
 
-```{r k_means_binary, echo=FALSE}
+```{r knn_binary, echo=FALSE}
 library(caret)
+
+# set seed is to make sure that the results can be repeated 
 set.seed(36912)
+
+# this divides the binary_data into two, with 70% being the training dataset and 
+# 30% being the testing dataset.
 binarytrainIndex <- createDataPartition(binary_data$label, p = 0.7,
                                         list = F,
                                         times = 1)
+
+# assigning the partitions to the binary_train and binary_test datasets
 binary_train_dataset <- binary_data[binarytrainIndex,]
 binary_test_dataset <- binary_data[-binarytrainIndex,]
 
-#binary_target_category <- binary_train_dataset$label
-#binary_test_category <- binary_test_dataset$label
-
+# taking the label columns from the binary_train and binary_test datasets
 binary_target_category <- binary_data[binarytrainIndex,1]
 binary_test_category <- binary_data[-binarytrainIndex,1]
 
-
 library(class)
+
+# iterates and determines the correcdt predictions of the knn algorithm
+# for each value of k, and then computes the accuracy
 
 knn3 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=3)
 tableknn3 <- table(knn3, binary_test_category)
-tableknn3
 acc3 <- sum(diag(tableknn3)/(sum(rowSums(tableknn3))))*100
-acc3
 
 knn5 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=5)
 tableknn5 <- table(knn5, binary_test_category)
-tableknn5
+acc5 <- sum(diag(tableknn5)/(sum(rowSums(tableknn5))))*100
 
 knn10 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=10)
 tableknn10 <- table(knn10, binary_test_category)
-tableknn10
+acc10 <- sum(diag(tableknn10)/(sum(rowSums(tableknn10))))*100
 
 knn15 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=15)
 tableknn15 <- table(knn15, binary_test_category)
-tableknn15
+acc15 <- sum(diag(tableknn15)/(sum(rowSums(tableknn15))))*100
 
 knn20 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=20)
 tableknn20 <- table(knn20, binary_test_category)
-tableknn20
+acc20 <- sum(diag(tableknn20)/(sum(rowSums(tableknn20))))*100
 
 knn25 <- knn(binary_train_dataset, binary_test_dataset, cl=binary_target_category,k=25)
 tableknn25 <- table(knn25, binary_test_category)
-tableknn25
+acc25 <- sum(diag(tableknn25)/(sum(rowSums(tableknn25))))*100
 
-#NEED TO COMUTE ACCURACY OF EACH KNN AND CREATE TABLE SO IT CAN BE PLOTTED.  THIS SEEMS OFF BECAUSE OF THE HIGH ACCURACY OF EACH MODEL
-# BUT I NEED TO MOVE ON.
+# combines all accuracies into a vector
+acctable <- c(acc3, acc5, acc10, acc15, acc20, acc25)
+
+# combines all the k values into a vector
+knncount <- c(3,5,10,15,20,25)
+
+# combines acctable and knncount into a data frame for graphing purposes
+graph_combine <- data.frame(knncount, acctable)
+
+# plots the graph of accuracy vs k value
+ggplot(graph_combine, aes(x=knncount, y=acctable)) + geom_point()
+
 
 ```
+
+To me, I think something is incorrect with my code because the accuracy values are really high, and very similar to each other.  I did the best I could to write the code in the manner that would help me to obtain the correct values for accuracy. 
+
+```{r knn_trinary, echo=FALSE}
+library(caret)
+
+# set seed is to make sure that the results can be repeated 
+set.seed(36912)
+
+# this divides the trinary_data into two, with 70% being the training dataset and 
+# 30% being the testing dataset.
+trinarytrainIndex <- createDataPartition(trinary_data$label, p = 0.7,
+                                        list = F,
+                                        times = 1)
+
+# assigning the partitions to the trinary_train and trinary_test datasets
+trinary_train_dataset <- trinary_data[trinarytrainIndex,]
+trinary_test_dataset <- trinary_data[-trinarytrainIndex,]
+
+# taking the label columns from the trinary_train and trinary_test datasets
+trinary_target_category <- trinary_data[trinarytrainIndex,1]
+trinary_test_category <- trinary_data[-trinarytrainIndex,1]
+
+library(class)
+
+# iterates and determines the correcdt predictions of the knn algorithm
+# for each value of k, and then computes the accuracy
+
+knn3 <- knn(trinary_train_dataset, trinary_test_dataset, cl=trinary_target_category,k=3)
+tableknn3 <- table(knn3, trinary_test_category)
+acc3 <- sum(diag(tableknn3)/(sum(rowSums(tableknn3))))*100
+
+knn5 <- knn(trinary_train_dataset, trinary_test_dataset, cl=trinary_target_category,k=5)
+tableknn5 <- table(knn5, trinary_test_category)
+acc5 <- sum(diag(tableknn5)/(sum(rowSums(tableknn5))))*100
+
+knn10 <- knn(trinary_train_dataset, trinary_test_dataset, cl=trinary_target_category,k=10)
+tableknn10 <- table(knn10, trinary_test_category)
+acc10 <- sum(diag(tableknn10)/(sum(rowSums(tableknn10))))*100
+
+knn15 <- knn(trinary_train_dataset, trinary_test_dataset, cl=trinary_target_category,k=15)
+tableknn15 <- table(knn15, trinary_test_category)
+acc15 <- sum(diag(tableknn15)/(sum(rowSums(tableknn15))))*100
+
+knn20 <- knn(trinary_train_dataset, trinary_test_dataset, cl=trinary_target_category,k=20)
+tableknn20 <- table(knn20, trinary_test_category)
+acc20 <- sum(diag(tableknn20)/(sum(rowSums(tableknn20))))*100
+
+knn25 <- knn(trinary_train_dataset, trinary_test_dataset, cl=trinary_target_category,k=25)
+tableknn25 <- table(knn25, trinary_test_category)
+acc25 <- sum(diag(tableknn25)/(sum(rowSums(tableknn25))))*100
+
+# combines all accuracies into a vector
+acctable <- c(acc3, acc5, acc10, acc15, acc20, acc25)
+
+# combines all the k values into a vector
+knncount <- c(3,5,10,15,20,25)
+
+# combines acctable and knncount into a data frame for graphing purposes
+graph_combine <- data.frame(knncount, acctable)
+
+# plots the graph of accuracy vs k value
+ggplot(graph_combine, aes(x=knncount, y=acctable)) + geom_point()
+
+```
+This graph looks more realisitic in terms of accuracy due to the values being more varied.
+
+### 3. Looking back at the plots of the data, do you think a linear classifier would work well on these datasets?
+
+I do not think that a linear classifer would work well on these data sets due to the sporadic nature and clustering of the data points.
+
+### 4. How does the accuracy of your logistic regression classifier from last week compare?  Why is the accuracy different between these two methods?
+
+For the binary data set, the logistic regression classifer had an accuracy of 0.601 or 60.1%.  This week, the accuracy was 99%.  I believe that the accuracy is different because of the ability to use a non-linear method of prediction versus a linear method.
+
+### 5. In this problem, you will use the k-means clustering algorithm to look for patterns in an unlabeled dataset. The dataset for this problem is found at data/clustering-data.csv.  Plot the dataset using a scatter plot.
+
+```{r scatter_plot_clustering, echo=FALSE}
+## Read the csv file in the clustering_data variable
+clustering_data <- read.csv("assignments/week11/clustering-data.csv")
+## load the ggplot2 library
+library(ggplot2)
+## Scatter plot of the binary data set.
+ggplot(clustering_data, aes(x = x, y = y)) +
+  geom_point()
+
+```
+
+### 6. Fit the dataset using the k-means algorithm from k=2 to k=12. Create a scatter plot of the resultant clusters for each value of k.
+
+```{r k_means, echo=FALSE}
+library(useful)
+set.seed(2468)
+
+cluster_k2_n25 <- kmeans(clustering_data, centers = 2, nstart = 25)
+plot(cluster_k2_n25, clustering_data)
+
+
+cluster_k3_n25 <- kmeans(clustering_data, centers = 3, nstart = 25)
+plot(cluster_k3_n25, clustering_data)
+
+
+cluster_k4_n25 <- kmeans(clustering_data, centers = 4, nstart = 25)
+plot(cluster_k4_n25, clustering_data)
+
+
+cluster_k5_n25 <- kmeans(clustering_data, centers = 5, nstart = 25)
+plot(cluster_k5_n25, clustering_data)
+
+
+cluster_k6_n25 <- kmeans(clustering_data, centers = 6, nstart = 25)
+plot(cluster_k6_n25, clustering_data)
+
+
+cluster_k7_n25 <- kmeans(clustering_data, centers = 7, nstart = 25)
+plot(cluster_k7_n25, clustering_data)
+
+
+cluster_k8_n25 <- kmeans(clustering_data, centers = 8, nstart = 25)
+plot(cluster_k8_n25, clustering_data)
+
+
+cluster_k9_n25 <- kmeans(clustering_data, centers = 9, nstart = 25)
+plot(cluster_k9_n25, clustering_data)
+
+
+cluster_k10_n25 <- kmeans(clustering_data, centers = 10, nstart = 25)
+plot(cluster_k10_n25, clustering_data)
+
+
+cluster_k11_n25 <- kmeans(clustering_data, centers = 11, nstart = 25)
+plot(cluster_k11_n25, clustering_data)
+
+
+cluster_k12_n25 <- kmeans(clustering_data, centers = 12, nstart = 25)
+plot(cluster_k12_n25, clustering_data)
+```
+
+### 7. As k-means is an unsupervised algorithm, you cannot compute the accuracy as there are no correct values to compare the output to. Instead, you will use the average distance from the center of each cluster as a measure of how well the model fits the data.  Calculate this average distance from the center of each cluster for each value of k and plot it as a line chart where k is the x-axis and the average distance is the y-axis.
+
+```{r distance_calc, echo=FALSE}
+library(factoextra)
+fviz_nbclust(clustering_data, kmeans, method = "wss", k.max = 12) +
+    geom_vline(xintercept = 4, linetype = 2)+
+  labs(subtitle = "Elbow method")
+```
+
+
+### 8.  One way of determining the “right” number of clusters is to look at the graph of k versus average distance and finding the “elbow point”. Looking at the graph you generated in the previous example, what is the elbow point for this dataset?
+
+The elbow point for this dataset is 4.
+

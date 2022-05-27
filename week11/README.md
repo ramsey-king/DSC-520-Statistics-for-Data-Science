@@ -1,1 +1,1 @@
-Placeholder file for week11 folder.
+### K Nearest Neighbors homework exercise.
